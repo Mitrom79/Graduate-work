@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,14 +28,15 @@ public class WebSecurityConfig {
             "/register"
     };
 
-
     private final CustomUserDetailsService customUserDetailsService;
-    private final PasswordEncoder passwordEncoder;
 
-    public WebSecurityConfig(CustomUserDetailsService customUserDetailsService,
-                             PasswordEncoder passwordEncoder) {
+    public WebSecurityConfig(CustomUserDetailsService customUserDetailsService) {
         this.customUserDetailsService = customUserDetailsService;
-        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -52,14 +54,21 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
+    public InMemoryUserDetailsManager userDetailsService() {
         UserDetails user = User.builder()
                 .username("user@gmail.com")
                 .password("password")
-                .passwordEncoder(passwordEncoder::encode)
+                .passwordEncoder(passwordEncoder()::encode)
                 .roles(Role.USER.name())
                 .build();
-        return new InMemoryUserDetailsManager(user);
-    }
 
+        UserDetails admin = User.builder()
+                .username("admin@gmail.com")
+                .password("admin")
+                .passwordEncoder(passwordEncoder()::encode)
+                .roles(Role.ADMIN.name())
+                .build();
+
+        return new InMemoryUserDetailsManager(user, admin);
+    }
 }
