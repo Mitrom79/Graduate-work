@@ -1,5 +1,9 @@
 package ru.skypro.homework.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,11 +20,18 @@ import ru.skypro.homework.service.AuthService;
 @CrossOrigin(value = "http://localhost:3000")
 @RestController
 @RequiredArgsConstructor
+@Schema(description = "Контроллер для авторизации и регистрации пользователей")
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/login")
+    @Operation(summary = "login", description = "авторизация пользователя",
+            parameters = @Parameter(name = "login", description = "логин и пароль пользователя"),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Created"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            })
     public ResponseEntity<?> login(@RequestBody Login login) {
         if (authService.login(login.getUsername(), login.getPassword())) {
             return ResponseEntity.ok().build();
@@ -30,6 +41,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "register", description = "регистрация пользователя",
+            parameters = @Parameter(name = "register", description = "регистрация пользователя"),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Created"),
+                    @ApiResponse(responseCode = "400", description = "Some fields haven't passed validation"),
+                    @ApiResponse(responseCode = "409", description = "User with such email already exists")
+            })
     public ResponseEntity<?> register(@RequestBody Register register) {
         if (authService.register(register)) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
