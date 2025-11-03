@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.dto.Comments;
 import ru.skypro.homework.dto.CreateOrUpdateComment;
@@ -12,10 +11,14 @@ import ru.skypro.homework.service.CommentService;
 
 @RestController
 @RequestMapping("/ads")
-@RequiredArgsConstructor
+
 @Schema(description = "Контроллер для работы с комментариями")
 public class CommentController {
     private final CommentService commentService;
+
+    public CommentController(CommentService commentService) {
+        this.commentService = commentService;
+    }
 
     @GetMapping("/{id}/comments")
     @Operation(summary = "Get comments by ad id", description = "Получение комментариев объявления",

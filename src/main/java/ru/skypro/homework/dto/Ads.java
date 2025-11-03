@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public class Ads {
     @Schema(description = "Список объявлений")
-    private List<Ad> results;
+    private List<AdDTO> results;
 }
