@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public class Comments {
     @Schema(description = "Список комментариев")
-    private List<Comment> results;
+    private List<CommentDTO> results;
 }

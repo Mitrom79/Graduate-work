@@ -1,68 +1,85 @@
 package ru.skypro.homework.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import ru.skypro.homework.dto.Role;
 
-import java.nio.file.FileStore;
+import java.util.Collection;
+import java.util.List;
 
+@Data
 @Entity
 @Table(name = "users")
-@Schema(description = "Данные пользователей")
-public class User {
+public class User implements UserDetails {
 
-    @Getter
-    @Setter
     @Id
-    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Getter
-    @Setter
-    @Column(name = "username", columnDefinition = "TEXT")
-    private String username;
+    @Column(unique = true, nullable = false)
+    private String email;
 
-    @Getter
-    @Setter
-    @Column(name = "password", columnDefinition = "TEXT")
-    private String password;
-
-    @Setter
-    @Getter
-    @Column(name = "firstName", columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String firstName;
 
-    @Getter
-    @Setter
-    @Column(name = "lastName", columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String lastName;
 
-    @Getter
-    @Setter
-    @Column(name = "phone", columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String phone;
 
-    @Getter
-    @Setter
-    @Column(name = "role", columnDefinition = "TEXT")
-    @JsonIgnore
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    public User(Long id, String username, String password, String firstName, String lastName, String phone) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
+    private String image;
+
+    @Column(nullable = false)
+    private String password;
+
+    // Конструкторы
+    public User() {}
+
+    public User(String email, String firstName, String lastName, String phone, Role role, String password) {
+        this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
+        this.role = role;
+        this.password = password;
     }
 
-    public User() {
+    // UserDetails методы - ОБЯЗАТЕЛЬНЫ для Spring Security
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
+    @Override
+    public String getUsername() {
+        return email; // Spring Security будет использовать email как username
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

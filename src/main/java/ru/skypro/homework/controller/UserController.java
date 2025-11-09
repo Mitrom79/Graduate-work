@@ -4,19 +4,22 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.dto.NewPassword;
 import ru.skypro.homework.dto.UpdateUser;
-import ru.skypro.homework.dto.User;
+import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.service.UserService;
 
 @RestController
 @RequestMapping("/user")
-@RequiredArgsConstructor
+
 @Schema(description = "Контроллер для работы с пользователями")
 public class UserController {
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PatchMapping("/set_password")
     @Operation(summary = "Set new password", description = "Обновление пароля",
@@ -35,8 +38,8 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized")
             })
-    public User getMe(){
-        return new User();
+    public UserDTO getMe(){
+        return new UserDTO();
     }
 
     @PatchMapping("/me")
