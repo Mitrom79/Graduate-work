@@ -11,7 +11,11 @@ import ru.skypro.homework.service.CommentService;
 
 @RestController
 @RequestMapping("/ads")
-
+@CrossOrigin(
+        origins = "http://localhost:3000",
+        allowedHeaders = "*",
+        methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS }
+)
 @Schema(description = "Контроллер для работы с комментариями")
 public class CommentController {
     private final CommentService commentService;

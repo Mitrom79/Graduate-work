@@ -1,15 +1,10 @@
-
 package ru.skypro.homework.entity;
-
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 
-
 @Entity
-
-
 public class Ad {
     @NotNull
     private int author;
@@ -22,13 +17,16 @@ public class Ad {
     private int price;
     @NotNull
     private String title;
+    @NotNull
+    private String description;
 
-    public Ad(int author, String image, int pk, int price, String title) {
+    public Ad(int author, String image, int pk, int price, String title, String description) {
         this.author = author;
         this.image = image;
         this.pk = pk;
         this.price = price;
         this.title = title;
+        this.description = description;
     }
 
     public Ad() {}
@@ -74,5 +72,13 @@ public class Ad {
 
     public void setTitle(@NotNull String title) {
         this.title = title;
+    }
+
+    public @NotNull String getDescription() {
+        return description;
+    }
+
+    public void setDescription(@NotNull String description) {
+        this.description = description;
     }
 }

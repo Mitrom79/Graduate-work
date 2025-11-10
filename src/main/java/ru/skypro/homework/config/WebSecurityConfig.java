@@ -26,23 +26,21 @@ public class WebSecurityConfig {
     private static final String[] AUTH_WHITELIST = {
             "/swagger-resources/**",
             "/swagger-ui.html",
-            "/swagger-ui/**",
             "/v3/api-docs",
-            "/v3/api-docs/**",
             "/webjars/**",
             "/login",
-            "/register",
-            "/auth/**"
+            "/register"
     };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
+                .cors(Customizer.withDefaults()) // Используем CORS из отдельного конфига
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(AUTH_WHITELIST).permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/ads/**", "/users/**").authenticated()
+                        .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());

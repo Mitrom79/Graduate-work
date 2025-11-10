@@ -5,9 +5,8 @@ import org.mapstruct.factory.Mappers;
 import ru.skypro.homework.dto.AdDTO;
 import ru.skypro.homework.entity.Ad;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface AdMapper {
-    AdMapper INSTANCE = Mappers.getMapper(AdMapper.class);
 
     AdDTO adToAdDto(Ad ad);
 

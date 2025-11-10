@@ -1,85 +1,108 @@
 package ru.skypro.homework.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import ru.skypro.homework.dto.Role;
+import jakarta.validation.constraints.NotNull;
 
-import java.util.Collection;
-import java.util.List;
-
-@Data
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
-
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @Column(unique = true, nullable = false)
+    private int id;
+    @NotNull
+    @Column(unique = true)
     private String email;
-
-    @Column(nullable = false)
+    @NotNull
     private String firstName;
-
-    @Column(nullable = false)
+    @NotNull
     private String lastName;
-
-    @Column(nullable = false)
+    @NotNull
     private String phone;
-
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
+    @Column(name = "image", columnDefinition="BYTEA")
+    private byte[] image;
 
-    private String image;
-
-    @Column(nullable = false)
+    @NotNull
     private String password;
 
-    // Конструкторы
-    public User() {}
+    public User(String email, String firstName, String lastName, String phone, Role role, byte[] image, String password) {
 
-    public User(String email, String firstName, String lastName, String phone, Role role, String password) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
         this.role = role;
+        this.image = image;
         this.password = password;
     }
 
-    // UserDetails методы - ОБЯЗАТЕЛЬНЫ для Spring Security
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    public User() {}
+
+    @NotNull
+    public int getId() {
+        return id;
     }
 
-    @Override
-    public String getUsername() {
-        return email; // Spring Security будет использовать email как username
+    public void setId(@NotNull int id) {
+        this.id = id;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
+    public @NotNull String getEmail() {
+        return email;
     }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
+    public void setEmail(@NotNull String email) {
+        this.email = email;
     }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
+    public @NotNull String getFirstName() {
+        return firstName;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public void setFirstName(@NotNull String firstName) {
+        this.firstName = firstName;
+    }
+
+    public @NotNull String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(@NotNull String lastName) {
+        this.lastName = lastName;
+    }
+
+    public @NotNull String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(@NotNull String phone) {
+        this.phone = phone;
+    }
+
+    public @NotNull Role getRole() {
+        return role;
+    }
+
+    public void setRole(@NotNull Role role) {
+        this.role = role;
+    }
+
+    public @NotNull byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(@NotNull byte[] image) {
+        this.image = image;
+    }
+
+    public @NotNull String getPassword() {
+        return password;
+    }
+
+    public void setPassword(@NotNull String password) {
+        this.password = password;
     }
 }
