@@ -123,4 +123,4 @@ java -jar target/graduate-work.jar
 - Логирование - детальное логирование для отладки
 
 ## Авторы
-- Митин Роман, Бодунов Артемий ([Mitrom79](https://github.com/Mitrom79)
+- Митин Роман, Бодунов Артемий ([Mitrom79](https://github.com/Mitrom79))
