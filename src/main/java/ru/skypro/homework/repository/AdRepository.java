@@ -5,5 +5,5 @@ import ru.skypro.homework.entity.Ad;
 import java.util.List;
 
 public interface AdRepository extends JpaRepository<Ad, Integer> {
+    List<Ad> findByAuthor(int authorId);
 }
-

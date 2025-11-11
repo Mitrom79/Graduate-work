@@ -5,10 +5,12 @@ import lombok.Data;
 
 @Data
 public class CreateOrUpdateAd {
-    @Schema(minLength = 4, maxLength = 32, description = "заголовок объявления")
+    @Schema(description = "заголовок объявления")
     private String title;
-    @Schema(maxLength = 10000000, description = "цена объявления")
+
+    @Schema(description = "цена объявления")
     private int price;
-    @Schema(minLength = 8, maxLength = 64, description = "описание объявления")
+
+    @Schema(description = "описание объявления")
     private String description;
 }

@@ -1,16 +1,16 @@
 package ru.skypro.homework.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.Mapping;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.User;
 
-
-@Mapper
+@Mapper(componentModel = "spring")
 public interface UserMapper {
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
+    @Mapping(target = "image", expression = "java(\"/users/\" + user.getId() + \"/image\")")
     UserDTO userToUserDto(User user);
 
-    User UserDtoToUser(UserDTO userDTO);
+    @Mapping(target = "image", ignore = true)
+    User userDtoToUser(UserDTO userDTO);
 }

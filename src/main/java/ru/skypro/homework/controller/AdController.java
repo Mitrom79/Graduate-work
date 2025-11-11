@@ -4,7 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.AdDTO;
 import ru.skypro.homework.dto.Ads;
 import ru.skypro.homework.dto.CreateOrUpdateAd;
@@ -12,6 +16,11 @@ import ru.skypro.homework.service.AdService;
 
 @RestController
 @RequestMapping("/ads")
+@CrossOrigin(
+        origins = "http://localhost:3000",
+        allowedHeaders = "*",
+        methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS }
+)
 @Schema(description = "Объявления")
 public class AdController {
     private final AdService adService;
@@ -22,22 +31,20 @@ public class AdController {
 
     @GetMapping
     @Operation(summary = "Get all ads", description = "получение всех объявлений")
-    public Ads getAllAds() {
-        return new Ads();
+    public ResponseEntity<Ads> getAllAds() {
+        return ResponseEntity.ok(adService.getAllAds());
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Add new ad", description = "добавление нового объявления",
-            parameters = {
-                    @Parameter(name = "ad", description = "new ad to add"),
-                    @Parameter(name = "image", description = "image for new ad")
-            },
             responses = {
                     @ApiResponse(responseCode = "201", description = "Created"),
                     @ApiResponse(responseCode = "400", description = "Some fields haven't passed validation"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized") })
-    public AdDTO addAd(@RequestBody CreateOrUpdateAd ad, @RequestBody String image) {
-        return new AdDTO();
+    public ResponseEntity<AdDTO> addAd(@RequestPart CreateOrUpdateAd ad,
+                                       @RequestPart MultipartFile image) {
+        AdDTO createdAd = adService.addAd(ad, image);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAd);
     }
 
     @GetMapping("/{id}")
@@ -47,8 +54,8 @@ public class AdController {
                     @ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
                     @ApiResponse(responseCode = "404", description = "Not found")})
-    public AdDTO getAd(@PathVariable int id) {
-        return new AdDTO();
+    public ResponseEntity<AdDTO> getAd(@PathVariable int id) {
+        return ResponseEntity.ok(adService.getAd(id));
     }
 
     @DeleteMapping("/{id}")
@@ -59,7 +66,9 @@ public class AdController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not found")})
-    public void deleteAd(@PathVariable int id) {
+    public ResponseEntity<Void> deleteAd(@PathVariable int id) {
+        adService.deleteAd(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
@@ -71,8 +80,9 @@ public class AdController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not found")})
-    public CreateOrUpdateAd updateAd(@PathVariable int id) {
-        return new CreateOrUpdateAd();
+    public ResponseEntity<CreateOrUpdateAd> updateAd(@PathVariable int id, @RequestBody CreateOrUpdateAd updateAd) {
+        CreateOrUpdateAd updatedAd = adService.updateAd(id, updateAd);
+        return ResponseEntity.ok(updatedAd);
     }
 
     @GetMapping("/me")
@@ -80,15 +90,14 @@ public class AdController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    public Ads getMyAds() {
-        return new Ads();
+    public ResponseEntity<Ads> getMyAds() {
+        return ResponseEntity.ok(adService.getMyAds());
     }
 
-    @PatchMapping("/{id}/image")
+    @PatchMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update image of ad", description = "обновление картинки объявления",
             parameters = {
-                    @Parameter(name = "id", description = "id of ad to update", required = true),
-                    @Parameter(name = "image", description = "new image for ad", required = true)
+                    @Parameter(name = "id", description = "id of ad to update", required = true)
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK"),
@@ -97,6 +106,8 @@ public class AdController {
                     @ApiResponse(responseCode = "404", description = "Not found")
             }
     )
-    public void updateImage(@PathVariable int id, @RequestBody String image) {
+    public ResponseEntity<Void> updateImage(@PathVariable int id, @RequestPart MultipartFile image) {
+        adService.updateImage(id, image);
+        return ResponseEntity.ok().build();
     }
 }
