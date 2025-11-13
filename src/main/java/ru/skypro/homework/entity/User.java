@@ -2,7 +2,7 @@ package ru.skypro.homework.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import ru.skypro.homework.dto.Role; // ДОБАВЬТЕ ЭТОТ ИМПОРТ
+import ru.skypro.homework.dto.Role;
 
 @Entity
 @Table(name = "users")
@@ -28,13 +28,13 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "image", columnDefinition="BYTEA")
-    private byte[] image;
+
+    private String image;
 
     @NotNull
     private String password;
 
-    public User(String email, String firstName, String lastName, String phone, Role role, byte[] image, String password) {
+    public User(String email, String firstName, String lastName, String phone, Role role, String image, String password) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -94,11 +94,12 @@ public class User {
         this.role = role;
     }
 
-    public byte[] getImage() {
+
+    public String getImage() {
         return image;
     }
 
-    public void setImage(byte[] image) {
+    public void setImage(String image) {
         this.image = image;
     }
 
