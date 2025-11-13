@@ -1,8 +1,8 @@
 package ru.skypro.homework.entity;
 
 import jakarta.persistence.*;
-import ru.skypro.homework.dto.Role;
 import jakarta.validation.constraints.NotNull;
+import ru.skypro.homework.dto.Role; // ДОБАВЬТЕ ЭТОТ ИМПОРТ
 
 @Entity
 @Table(name = "users")
@@ -10,18 +10,24 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
     @NotNull
     @Column(unique = true)
     private String email;
+
     @NotNull
     private String firstName;
+
     @NotNull
     private String lastName;
+
     @NotNull
     private String phone;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Role role;
+
     @Column(name = "image", columnDefinition="BYTEA")
     private byte[] image;
 
@@ -29,7 +35,6 @@ public class User {
     private String password;
 
     public User(String email, String firstName, String lastName, String phone, Role role, byte[] image, String password) {
-
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -41,68 +46,67 @@ public class User {
 
     public User() {}
 
-    @NotNull
     public int getId() {
         return id;
     }
 
-    public void setId(@NotNull int id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public @NotNull String getEmail() {
+    public String getEmail() {
         return email;
     }
 
-    public void setEmail(@NotNull String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
 
-    public @NotNull String getFirstName() {
+    public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(@NotNull String firstName) {
+    public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    public @NotNull String getLastName() {
+    public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(@NotNull String lastName) {
+    public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
-    public @NotNull String getPhone() {
+    public String getPhone() {
         return phone;
     }
 
-    public void setPhone(@NotNull String phone) {
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 
-    public @NotNull Role getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(@NotNull Role role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
-    public @NotNull byte[] getImage() {
+    public byte[] getImage() {
         return image;
     }
 
-    public void setImage(@NotNull byte[] image) {
+    public void setImage(byte[] image) {
         this.image = image;
     }
 
-    public @NotNull String getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(@NotNull String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 }
