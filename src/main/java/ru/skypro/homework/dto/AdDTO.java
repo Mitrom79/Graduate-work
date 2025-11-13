@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Data
 @Getter
 @Setter
@@ -20,13 +19,16 @@ public class AdDTO {
     private int price;
     @Schema(description = "заголовок объявления", example = "Объявление 1")
     private String title;
+    @Schema(description = "описание объявления", example = "Описание объявления")
+    private String description;
 
-    public AdDTO(int author, String image, int pk, int price, String title) {
+    public AdDTO(int author, String image, int pk, int price, String title, String description) {
         this.author = author;
         this.image = image;
         this.pk = pk;
         this.price = price;
         this.title = title;
+        this.description = description;
     }
 
     public AdDTO() {}

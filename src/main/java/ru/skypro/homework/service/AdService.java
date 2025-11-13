@@ -37,149 +37,214 @@ public class AdService {
     private final AdMapper adMapper;
 
     public Ads getAllAds() {
-        List<Ad> ads = adRepository.findAll();
-        List<AdDTO> adDTOs = ads.stream()
-                .map(adMapper::adToAdDto)
-                .collect(Collectors.toList());
+        try {
+            List<Ad> ads = adRepository.findAll();
+            List<AdDTO> adDTOs = ads.stream()
+                    .map(adMapper::adToAdDto)
+                    .collect(Collectors.toList());
 
-        Ads result = new Ads();
-        result.setResults(adDTOs);
-        return result;
+            Ads result = new Ads();
+            result.setResults(adDTOs);
+            log.info("Получено {} объявлений", adDTOs.size());
+            return result;
+        } catch (Exception e) {
+            log.error("Ошибка при получении всех объявлений", e);
+            throw new RuntimeException("Не удалось получить объявления", e);
+        }
     }
 
     public AdDTO getAd(int id) {
-        Ad ad = adRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
-        return adMapper.adToAdDto(ad);
+        try {
+            Ad ad = adRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Объявление с id " + id + " не найдено"));
+            return adMapper.adToAdDto(ad);
+        } catch (Exception e) {
+            log.error("Ошибка при получении объявления с id {}", id, e);
+            throw new RuntimeException("Не удалось получить объявление", e);
+        }
     }
 
-    public AdDTO addAd(CreateOrUpdateAd createAd, MultipartFile image) throws IOException {
-        User author = currentUserService.getCurrentUser();
-        log.debug("Creating ad for user: {}", author.getEmail());
+    public AdDTO addAd(CreateOrUpdateAd properties, MultipartFile image) throws IOException {
+        try {
+            User author = currentUserService.getCurrentUser();
+            log.info("Создание объявления для пользователя: {}", author.getEmail());
 
+            // Валидация данных
+            if (properties.getTitle() == null || properties.getTitle().trim().isEmpty()) {
+                throw new IllegalArgumentException("Заголовок объявления не может быть пустым");
+            }
+            if (properties.getPrice() <= 0) {
+                throw new IllegalArgumentException("Цена должна быть положительной");
+            }
+            if (image == null || image.isEmpty()) {
+                throw new IllegalArgumentException("Изображение обязательно");
+            }
 
-        int nextId = getNextAdId();
+            int nextId = getNextAdId();
 
-        Ad ad = new Ad();
-        ad.setAuthor(author.getId());
-        ad.setPk(nextId);
-        ad.setTitle(createAd.getTitle());
-        ad.setPrice(createAd.getPrice());
-        ad.setDescription(createAd.getDescription());
+            Ad ad = adMapper.toAd(properties);
+            ad.setAuthor(author.getId());
+            ad.setPk(nextId);
 
+            // Сохранение изображения
+            String filename = generateFileName(author.getEmail(), image);
+            Path filePath = Path.of(adDir, filename);
+            Files.createDirectories(filePath.getParent());
+            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        String filename = author.getEmail() + "_" + System.currentTimeMillis() + "." + getExtension(Objects.requireNonNull(image.getOriginalFilename()));
-        Path filePath = Path.of(adDir, filename);
-        Files.createDirectories(filePath.getParent());
-        Files.copy(image.getInputStream(), filePath);
+            ad.setImage("/" + adDir + "/" + filename); // Сохраняем относительный путь
 
+            Ad savedAd = adRepository.save(ad);
+            log.info("Объявление успешно создано: id={}, title={}, пользователь {}",
+                    savedAd.getPk(), savedAd.getTitle(), author.getEmail());
 
-        ad.setImage(filePath.toString());
-
-        Ad savedAd = adRepository.save(ad);
-        log.info("Ad created successfully by user {}", author.getEmail());
-        return adMapper.adToAdDto(savedAd);
+            return adMapper.adToAdDto(savedAd);
+        } catch (Exception e) {
+            log.error("Ошибка при создании объявления", e);
+            throw e; // Пробрасываем исключение дальше
+        }
     }
 
     public void deleteAd(int id) {
-        User currentUser = currentUserService.getCurrentUser();
-        Ad ad = adRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+        try {
+            User currentUser = currentUserService.getCurrentUser();
+            Ad ad = adRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Объявление с id " + id + " не найдено"));
 
-        if (ad.getAuthor() != currentUser.getId() && !currentUser.getRole().equals(Role.ADMIN)) {
-            throw new RuntimeException("Нет прав для удаления этого объявления");
-        }
-
-
-        if (ad.getImage() != null && !ad.getImage().startsWith("data:")) {
-            try {
-                Files.deleteIfExists(Path.of(ad.getImage()));
-            } catch (IOException e) {
-                log.error("Failed to delete ad image file: {}", ad.getImage(), e);
+            // Проверка прав
+            if (ad.getAuthor() != currentUser.getId() && currentUser.getRole() != Role.ADMIN) {
+                throw new SecurityException("Недостаточно прав для удаления этого объявления");
             }
-        }
 
-        adRepository.delete(ad);
-        log.info("Ad {} deleted successfully by user {}", id, currentUser.getEmail());
+            // Удаление файла изображения
+            if (ad.getImage() != null && !ad.getImage().startsWith("data:")) {
+                try {
+                    Path imagePath = Path.of(ad.getImage()).normalize();
+                    Files.deleteIfExists(imagePath);
+                } catch (IOException e) {
+                    log.warn("Не удалось удалить файл изображения: {}", ad.getImage(), e);
+                }
+            }
+
+            adRepository.delete(ad);
+            log.info("Объявление {} удалено пользователем {}", id, currentUser.getEmail());
+        } catch (Exception e) {
+            log.error("Ошибка при удалении объявления с id {}", id, e);
+            throw new RuntimeException("Не удалось удалить объявление", e);
+        }
     }
 
     public CreateOrUpdateAd updateAd(int id, CreateOrUpdateAd updateAd) {
-        User currentUser = currentUserService.getCurrentUser();
-        Ad ad = adRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+        try {
+            User currentUser = currentUserService.getCurrentUser();
+            Ad ad = adRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Объявление с id " + id + " не найдено"));
 
-        if (ad.getAuthor() != currentUser.getId() && !currentUser.getRole().equals(Role.ADMIN)) {
-            throw new RuntimeException("Нет прав для редактирования этого объявления");
+            // Проверка прав
+            if (ad.getAuthor() != currentUser.getId() && currentUser.getRole() != Role.ADMIN) {
+                throw new SecurityException("Недостаточно прав для редактирования этого объявления");
+            }
+
+            // Валидация
+            if (updateAd.getTitle() == null || updateAd.getTitle().trim().isEmpty()) {
+                throw new IllegalArgumentException("Заголовок объявления не может быть пустым");
+            }
+            if (updateAd.getPrice() <= 0) {
+                throw new IllegalArgumentException("Цена должна быть положительной");
+            }
+
+            ad.setTitle(updateAd.getTitle());
+            ad.setPrice(updateAd.getPrice());
+            ad.setDescription(updateAd.getDescription());
+            adRepository.save(ad);
+
+            log.info("Объявление {} обновлено пользователем {}", id, currentUser.getEmail());
+            return updateAd;
+        } catch (Exception e) {
+            log.error("Ошибка при обновлении объявления с id {}", id, e);
+            throw new RuntimeException("Не удалось обновить объявление", e);
         }
-
-        ad.setTitle(updateAd.getTitle());
-        ad.setPrice(updateAd.getPrice());
-        ad.setDescription(updateAd.getDescription());
-        adRepository.save(ad);
-
-        log.info("Ad {} updated successfully by user {}", id, currentUser.getEmail());
-        return updateAd;
     }
 
     public Ads getMyAds() {
-        User currentUser = currentUserService.getCurrentUser();
-        List<Ad> userAds = adRepository.findByAuthor(currentUser.getId());
+        try {
+            User currentUser = currentUserService.getCurrentUser();
+            List<Ad> userAds = adRepository.findByAuthor(currentUser.getId());
 
-        List<AdDTO> adDTOs = userAds.stream()
-                .map(adMapper::adToAdDto)
-                .collect(Collectors.toList());
+            List<AdDTO> adDTOs = userAds.stream()
+                    .map(adMapper::adToAdDto)
+                    .collect(Collectors.toList());
 
-        Ads result = new Ads();
-        result.setResults(adDTOs);
-        return result;
+            Ads result = new Ads();
+            result.setResults(adDTOs);
+            log.info("Получено {} объявлений пользователя {}", adDTOs.size(), currentUser.getEmail());
+            return result;
+        } catch (Exception e) {
+            log.error("Ошибка при получении объявлений пользователя", e);
+            throw new RuntimeException("Не удалось получить ваши объявления", e);
+        }
     }
 
     public void updateImage(int id, MultipartFile image) throws IOException {
-        User currentUser = currentUserService.getCurrentUser();
-        Ad ad = adRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+        try {
+            User currentUser = currentUserService.getCurrentUser();
+            Ad ad = adRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Объявление с id " + id + " не найдено"));
 
-        if (ad.getAuthor() != currentUser.getId() && !currentUser.getRole().equals(Role.ADMIN)) {
-            throw new RuntimeException("Нет прав для редактирования этого объявления");
+            if (ad.getAuthor() != currentUser.getId() && currentUser.getRole() != Role.ADMIN) {
+                throw new SecurityException("Недостаточно прав для редактирования этого объявления");
+            }
+
+            if (image == null || image.isEmpty()) {
+                throw new IllegalArgumentException("Изображение обязательно");
+            }
+
+            updateAdImageInternal(ad, image, currentUser);
+        } catch (Exception e) {
+            log.error("Ошибка при обновлении изображения объявления с id {}", id, e);
+            throw e;
         }
-
-        updateAdImageInternal(ad, image, currentUser);
     }
 
-
     private void updateAdImageInternal(Ad ad, MultipartFile imageFile, User author) throws IOException {
-        String extension = getExtension(Objects.requireNonNull(imageFile.getOriginalFilename()));
-        String newFileName = author.getEmail() + "_" + System.currentTimeMillis() + "." + extension;
-
+        String newFileName = generateFileName(author.getEmail(), imageFile);
         Path baseDir = Path.of(adDir).toAbsolutePath().normalize();
         Path newFilePath = baseDir.resolve(newFileName).normalize();
 
         if (!newFilePath.startsWith(baseDir)) {
-            throw new SecurityException("Invalid file path: attempted path traversal");
+            throw new SecurityException("Недопустимый путь к файлу: попытка обхода директории");
         }
 
         Files.createDirectories(newFilePath.getParent());
         Files.copy(imageFile.getInputStream(), newFilePath, StandardCopyOption.REPLACE_EXISTING);
 
-
-        if (ad.getImage() != null && !ad.getImage().startsWith("data:") && !ad.getImage().equals(newFilePath.toString())) {
+        // Удаляем старое изображение
+        if (ad.getImage() != null && !ad.getImage().startsWith("data:")) {
             try {
-                Files.deleteIfExists(Path.of(ad.getImage()));
+                Path oldImagePath = Path.of(ad.getImage()).normalize();
+                Files.deleteIfExists(oldImagePath);
             } catch (IOException e) {
-                log.error("Failed to delete old ad image: {}", ad.getImage(), e);
+                log.warn("Не удалось удалить старое изображение: {}", ad.getImage(), e);
             }
         }
 
-        ad.setImage(newFilePath.toString());
+        ad.setImage("/" + adDir + "/" + newFileName);
         adRepository.save(ad);
-        log.info("Ad image updated");
+        log.info("Изображение объявления {} обновлено", ad.getPk());
     }
 
+    private String generateFileName(String email, MultipartFile image) {
+        String extension = getExtension(Objects.requireNonNull(image.getOriginalFilename()));
+        return email + "_" + System.currentTimeMillis() + "." + extension;
+    }
 
     private String getExtension(String fileName) {
-        return fileName.substring(fileName.lastIndexOf('.') + 1);
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex == -1) {
+            return "jpg"; // расширение по умолчанию
+        }
+        return fileName.substring(lastDotIndex + 1);
     }
-
 
     private int getNextAdId() {
         return adRepository.findAll().stream()
