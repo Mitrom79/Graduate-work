@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.Register;
+import ru.skypro.homework.dto.Role; // ИЗМЕНИТЕ ИМПОРТ - из dto, а не entity
 import ru.skypro.homework.entity.User;
 import ru.skypro.homework.repository.UserRepository;
 
@@ -46,10 +47,13 @@ public class AuthServiceImpl implements AuthService {
         log.info("register: {}", register.getUsername());
         user.setEmail(register.getUsername());
         user.setPassword(encoder.encode(register.getPassword()));
-        user.setRole(register.getRole());
+        user.setRole(register.getRole() != null ? register.getRole() : Role.USER);
         user.setFirstName(register.getFirstName());
         user.setLastName(register.getLastName());
         user.setPhone(register.getPhone());
+
+        // Установка пустого массива байтов для image
+        user.setImage(new byte[0]);
 
         userRepository.save(user);
         return true;

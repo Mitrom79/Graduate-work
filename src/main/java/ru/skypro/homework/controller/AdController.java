@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,9 @@ import ru.skypro.homework.dto.Ads;
 import ru.skypro.homework.dto.CreateOrUpdateAd;
 import ru.skypro.homework.service.AdService;
 
+import java.io.IOException;
+
+@Slf4j
 @RestController
 @RequestMapping("/ads")
 @CrossOrigin(
@@ -40,11 +44,17 @@ public class AdController {
             responses = {
                     @ApiResponse(responseCode = "201", description = "Created"),
                     @ApiResponse(responseCode = "400", description = "Some fields haven't passed validation"),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized") })
+                    @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error") })
     public ResponseEntity<AdDTO> addAd(@RequestPart CreateOrUpdateAd ad,
                                        @RequestPart MultipartFile image) {
-        AdDTO createdAd = adService.addAd(ad, image);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdAd);
+        try {
+            AdDTO createdAd = adService.addAd(ad, image);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdAd);
+        } catch (IOException e) {
+            log.error("Ошибка при сохранении изображения объявления", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")
@@ -103,11 +113,17 @@ public class AdController {
                     @ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
-                    @ApiResponse(responseCode = "404", description = "Not found")
+                    @ApiResponse(responseCode = "404", description = "Not found"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
             }
     )
     public ResponseEntity<Void> updateImage(@PathVariable int id, @RequestPart MultipartFile image) {
-        adService.updateImage(id, image);
-        return ResponseEntity.ok().build();
+        try {
+            adService.updateImage(id, image);
+            return ResponseEntity.ok().build();
+        } catch (IOException e) {
+            log.error("Ошибка при обновлении изображения объявления", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
