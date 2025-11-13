@@ -2,36 +2,24 @@ package ru.skypro.homework.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Date;
 
 @Data
-@Getter
-@Setter
 public class CommentDTO {
-    @Schema(description = "id автора комментария")
+    @Schema(description = "ID автора комментария", example = "123")
     private int author;
-    @Schema(description = "ссылка на аватар автора комментария")
+
+    @Schema(description = "Ссылка на аватар автора комментария", example = "/images/users/avatar.jpg")
     private String authorImage;
-    @Schema(description = "имя создателя комментария")
+
+    @Schema(description = "Имя автора комментария", example = "Иван")
     private String authorFirstName;
-    @Schema(description = "дата и время создания комментария в миллисекундах с 00:00:00 01.01.1970")
-    private Date createdAt;
-    @Schema(description = "id комментария")
+
+    @Schema(description = "Дата создания комментария в миллисекундах", example = "1639492800000")
+    private Long createdAt;
+
+    @Schema(description = "ID комментария", example = "1")
     private int pk;
-    @Schema(description = "текст комментария")
+
+    @Schema(description = "Текст комментария", example = "Отличное объявление!")
     private String text;
-
-    public CommentDTO() {}
-
-    public CommentDTO(int author, String authorImage, String authorFirstName, Date createdAt, int pk, String text) {
-        this.author = author;
-        this.authorImage = authorImage;
-        this.authorFirstName = authorFirstName;
-        this.createdAt = createdAt;
-        this.pk = pk;
-        this.text = text;
-    }
 }

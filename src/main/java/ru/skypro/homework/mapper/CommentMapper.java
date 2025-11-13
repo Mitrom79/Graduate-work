@@ -1,15 +1,17 @@
 package ru.skypro.homework.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.Mapping;
 import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.entity.Comment;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface CommentMapper {
-    CommentMapper INSTANCE = Mappers.getMapper(CommentMapper.class);
 
+    @Mapping(source = "createdAt", target = "createdAt")
     CommentDTO commentToCommentDto(Comment comment);
 
-    Comment commentDtoToComment(CommentDTO commentDTO);
+    default Long mapCreatedAt(java.util.Date date) {
+        return date == null ? null : date.getTime();
+    }
 }
