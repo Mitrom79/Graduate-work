@@ -1,40 +1,51 @@
 package ru.skypro.homework.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-
-
 
 import java.util.Date;
 
 @Entity
-
-
+@Table(name = "comment")
 public class Comment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int pk;
+
     @NotNull
     private int author;
+
     @NotNull
     private String authorImage;
+
     @NotNull
     private String authorFirstName;
+
     @NotNull
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
-    @Id
+
     @NotNull
-    private int pk;
-    @NotNull
+    @Column(length = 1000)
     private String text;
 
-    public Comment(int author, String authorImage, String authorFirstName, Date createdAt, int pk, String text) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ad_id")
+    private Ad ad;
+
+    public Comment() {}
+
+    public Comment(int author, String authorImage, String authorFirstName, Date createdAt, int pk, String text, Ad ad) {
         this.author = author;
         this.authorImage = authorImage;
         this.authorFirstName = authorFirstName;
         this.createdAt = createdAt;
         this.pk = pk;
         this.text = text;
+        this.ad = ad;
     }
 
+    // Геттеры и сеттеры
     @NotNull
     public int getAuthor() {
         return author;
@@ -85,5 +96,11 @@ public class Comment {
         this.text = text;
     }
 
-    public Comment() {}
+    public Ad getAd() {
+        return ad;
+    }
+
+    public void setAd(Ad ad) {
+        this.ad = ad;
+    }
 }
