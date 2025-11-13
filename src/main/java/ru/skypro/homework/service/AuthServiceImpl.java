@@ -53,8 +53,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPhone(register.getPhone());
 
 
-        user.setImage(new byte[0]);
-
+        user.setImage(null);
         userRepository.save(user);
         return true;
     }

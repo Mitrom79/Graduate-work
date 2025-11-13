@@ -13,13 +13,8 @@ public interface UserService {
 
     UpdateUser updateUser(User user, UpdateUser updateUser);
 
-    void updateUserImage(User user, byte[] image);
-
-    void updateUserImage(MultipartFile file);
-
-    byte[] getUserImage();
-
-    byte[] getUserImage(Integer userId);
+    void updateUserImage(MultipartFile image);
+    String updateUserImage(User user, MultipartFile image);
 
     UserDTO getCurrentUserDTO();
 }

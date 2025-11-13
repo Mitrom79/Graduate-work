@@ -20,6 +20,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final CurrentUserService currentUserService;
     private final UserMapper userMapper;
+    private final ImageService imageService;
 
     @Override
     public void updatePassword(User user, String newPassword) {
@@ -32,8 +33,6 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return null;
         }
-
-
         return userMapper.userToUserDto(user);
     }
 
@@ -55,21 +54,14 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-    @Override
-    public void updateUserImage(User user, byte[] image) {
-        if (user == null || image == null) {
-            return;
-        }
-        user.setImage(image);
-        userRepository.save(user);
-    }
 
     @Override
-    public void updateUserImage(MultipartFile file) {
+    public void updateUserImage(MultipartFile image) {
         User user = currentUserService.getCurrentUser();
         try {
-            if (file != null && !file.isEmpty()) {
-                user.setImage(file.getBytes());
+            if (image != null && !image.isEmpty()) {
+                String imagePath = imageService.saveUserImage(image);
+                user.setImage(imagePath);
                 userRepository.save(user);
             }
         } catch (IOException e) {
@@ -78,16 +70,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public byte[] getUserImage() {
-        User user = currentUserService.getCurrentUser();
-        return user != null ? user.getImage() : null;
-    }
-
-    @Override
-    public byte[] getUserImage(Integer userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-        return user.getImage();
+    public String updateUserImage(User user, MultipartFile image) {
+        try {
+            if (image != null && !image.isEmpty()) {
+                String imagePath = imageService.saveUserImage(image);
+                user.setImage(imagePath);
+                userRepository.save(user);
+                return imagePath;
+            }
+            return user.getImage();
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка загрузки изображения", e);
+        }
     }
 
     @Override
