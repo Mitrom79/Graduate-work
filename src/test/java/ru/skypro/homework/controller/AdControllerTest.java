@@ -87,7 +87,7 @@ class AdControllerTest {
             createAd.setDescription("Test Description");
 
             MockMultipartFile properties = new MockMultipartFile(
-                    "ad",
+                    "properties",
                     "",
                     MediaType.APPLICATION_JSON_VALUE,
                     objectMapper.writeValueAsBytes(createAd)
