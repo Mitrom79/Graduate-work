@@ -35,13 +35,8 @@ public class CommentController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
                     @ApiResponse(responseCode = "404", description = "Not found") })
     public ResponseEntity<Comments> getCommentsByAdId(@PathVariable int id) {
-        try {
-            Comments comments = commentService.getCommentsByAdId(id);
-            return ResponseEntity.ok(comments);
-        } catch (Exception e) {
-            log.error("Ошибка при получении комментариев для объявления {}", id, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Comments comments = commentService.getCommentsByAdId(id);
+        return ResponseEntity.ok(comments);
     }
 
     @PostMapping("/{id}/comments")
@@ -55,20 +50,13 @@ public class CommentController {
     public ResponseEntity<CommentDTO> addCommentByAdId(
             @PathVariable int id,
             @RequestBody CreateOrUpdateComment createOrUpdateComment) {
-        try {
-            if (createOrUpdateComment.getText() == null || createOrUpdateComment.getText().trim().isEmpty()) {
-                return ResponseEntity.badRequest().build();
-            }
 
-            CommentDTO commentDTO = commentService.addComment(id, createOrUpdateComment);
-            return ResponseEntity.ok(commentDTO);
-        } catch (RuntimeException e) {
-            log.error("Ошибка при добавлении комментария к объявлению {}", id, e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            log.error("Ошибка при добавлении комментария к объявлению {}", id, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        if (createOrUpdateComment.getText() == null || createOrUpdateComment.getText().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
         }
+
+        CommentDTO commentDTO = commentService.addComment(id, createOrUpdateComment);
+        return ResponseEntity.ok(commentDTO);
     }
 
     @DeleteMapping("/{adId}/comments/{commentId}")
@@ -79,27 +67,15 @@ public class CommentController {
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK"),
-                    @ApiResponse(responseCode = "400", description = "Some fields haven't passed validation"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized"),
                     @ApiResponse(responseCode = "403", description = "Forbidden"),
                     @ApiResponse(responseCode = "404", description = "Not found") })
     public ResponseEntity<Void> deleteCommentByAdId(
             @PathVariable int adId,
             @PathVariable int commentId) {
-        try {
-            commentService.deleteComment(adId, commentId);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("Недостаточно прав")) {
-                log.warn("Попытка удаления комментария без прав: {}", e.getMessage());
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            } else if (e.getMessage().contains("не найден")) {
-                log.warn("Комментарий не найден: adId={}, commentId={}", adId, commentId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-            log.error("Ошибка при удалении комментария", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+
+        commentService.deleteComment(adId, commentId);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{adId}/comments/{commentId}")
@@ -118,23 +94,12 @@ public class CommentController {
             @PathVariable int adId,
             @PathVariable int commentId,
             @RequestBody CreateOrUpdateComment updateComment) {
-        try {
-            if (updateComment.getText() == null || updateComment.getText().trim().isEmpty()) {
-                return ResponseEntity.badRequest().build();
-            }
 
-            CommentDTO commentDTO = commentService.updateComment(adId, commentId, updateComment);
-            return ResponseEntity.ok(commentDTO);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("Недостаточно прав")) {
-                log.warn("Попытка редактирования комментария без прав: {}", e.getMessage());
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            } else if (e.getMessage().contains("не найден")) {
-                log.warn("Комментарий не найден: adId={}, commentId={}", adId, commentId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
-            log.error("Ошибка при обновлении комментария", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        if (updateComment.getText() == null || updateComment.getText().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
         }
+
+        CommentDTO commentDTO = commentService.updateComment(adId, commentId, updateComment);
+        return ResponseEntity.ok(commentDTO);
     }
 }

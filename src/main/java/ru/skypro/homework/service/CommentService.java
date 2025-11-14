@@ -3,6 +3,7 @@ package ru.skypro.homework.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.dto.Comments;
 import ru.skypro.homework.dto.CreateOrUpdateComment;
@@ -21,13 +22,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CommentService {
     private final CommentRepository commentRepository;
     private final AdRepository adRepository;
     private final CurrentUserService currentUserService;
     private final CommentMapper commentMapper;
 
-
+    @Transactional(readOnly = true)
     public Comments getCommentsByAdId(int adId) {
         log.info("Получение комментариев для объявления с ID: {}", adId);
 
@@ -59,13 +61,9 @@ public class CommentService {
         comment.setText(createOrUpdateComment.getText());
         comment.setAd(ad);
 
-
-
-        int nextCommentId = getNextCommentId();
-        comment.setPk(nextCommentId);
-
+        // УБРАНО ручное управление ID - теперь полагаемся на GenerationType.IDENTITY
         Comment savedComment = commentRepository.save(comment);
-        log.info("Комментарий успешно добавлен к объявлению {}", adId);
+        log.info("Комментарий успешно добавлен к объявлению {}, ID комментария: {}", adId, savedComment.getPk());
 
         return commentMapper.commentToCommentDto(savedComment);
     }
@@ -74,12 +72,13 @@ public class CommentService {
         log.info("Удаление комментария {} из объявления {}", commentId, adId);
 
         User currentUser = currentUserService.getCurrentUser();
+
+        // Используем существующий метод из репозитория
         Comment comment = commentRepository.findByAdIdAndCommentId(adId, commentId);
 
         if (comment == null) {
             throw new RuntimeException("Комментарий не найден");
         }
-
 
         if (comment.getAuthor() != currentUser.getId() && currentUser.getRole() != Role.ADMIN) {
             throw new RuntimeException("Недостаточно прав для удаления комментария");
@@ -93,12 +92,13 @@ public class CommentService {
         log.info("Обновление комментария {} в объявлении {}", commentId, adId);
 
         User currentUser = currentUserService.getCurrentUser();
+
+        // Используем существующий метод из репозитория
         Comment comment = commentRepository.findByAdIdAndCommentId(adId, commentId);
 
         if (comment == null) {
             throw new RuntimeException("Комментарий не найден");
         }
-
 
         if (comment.getAuthor() != currentUser.getId()) {
             throw new RuntimeException("Недостаточно прав для редактирования комментария");
@@ -109,12 +109,5 @@ public class CommentService {
         log.info("Комментарий {} успешно обновлен", commentId);
 
         return commentMapper.commentToCommentDto(updatedComment);
-    }
-
-    private int getNextCommentId() {
-        return commentRepository.findAll().stream()
-                .mapToInt(Comment::getPk)
-                .max()
-                .orElse(0) + 1;
     }
 }
