@@ -12,7 +12,7 @@
 - ## Вспомогательные технологии
 - MapStrct
 - Lombok
-- OpenAPI
+- OpenAPI 3.0
 - Maven 
 
 ## Требования к окружению
