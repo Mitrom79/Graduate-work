@@ -27,6 +27,7 @@ public class CommentService {
     private final CurrentUserService currentUserService;
     private final CommentMapper commentMapper;
 
+
     public Comments getCommentsByAdId(int adId) {
         log.info("Получение комментариев для объявления с ID: {}", adId);
 
@@ -58,7 +59,8 @@ public class CommentService {
         comment.setText(createOrUpdateComment.getText());
         comment.setAd(ad);
 
-        // Получаем следующий ID для комментария
+
+
         int nextCommentId = getNextCommentId();
         comment.setPk(nextCommentId);
 
@@ -78,7 +80,7 @@ public class CommentService {
             throw new RuntimeException("Комментарий не найден");
         }
 
-        // Проверяем права: автор комментария или ADMIN
+
         if (comment.getAuthor() != currentUser.getId() && currentUser.getRole() != Role.ADMIN) {
             throw new RuntimeException("Недостаточно прав для удаления комментария");
         }
@@ -97,7 +99,7 @@ public class CommentService {
             throw new RuntimeException("Комментарий не найден");
         }
 
-        // Проверяем права: только автор комментария может его редактировать
+
         if (comment.getAuthor() != currentUser.getId()) {
             throw new RuntimeException("Недостаточно прав для редактирования комментария");
         }

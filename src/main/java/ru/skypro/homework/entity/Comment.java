@@ -45,7 +45,7 @@ public class Comment {
         this.ad = ad;
     }
 
-    // Геттеры и сеттеры
+
     @NotNull
     public int getAuthor() {
         return author;
