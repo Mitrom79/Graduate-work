@@ -9,7 +9,11 @@
 - **Безопасность**: Spring Security
 - **Документация**: OpenAPI 3 (Swagger)
 - **Миграции**: Liquibase
-- **Сборка**: Maven
+- ## Вспомогательные технологии
+- MapStrct
+- Lombok
+- OpenAPI
+- Maven 
 
 ## Требования к окружению
 - JDK 17 или выше
