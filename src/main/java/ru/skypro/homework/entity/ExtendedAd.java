@@ -5,9 +5,6 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-
-
-
 public class ExtendedAd {
     @Id
     @NotNull
