@@ -68,7 +68,7 @@ public class AdController {
             log.warn("Ошибка валидации: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (IOException e) {
-            log.error("❌ Ошибка при сохранении изображения объявления", e);
+            log.error("Ошибка при сохранении изображения объявления", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         } catch (Exception e) {
             log.error("Неожиданная ошибка при создании объявления", e);

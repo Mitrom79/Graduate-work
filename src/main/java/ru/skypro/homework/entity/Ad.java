@@ -42,7 +42,7 @@ public class Ad {
         this.description = description;
     }
 
-    // Геттеры и сеттеры
+
     @NotNull
     public int getAuthor() {
         return author;
